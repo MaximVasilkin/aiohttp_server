@@ -34,7 +34,7 @@ class Advertisment(Base):
     description = sq.Column(sq.String(length=500), nullable=False, unique=False)
     created_at = sq.Column(sq.DateTime, default=sq.func.now())
 
-    user = relationship('User', back_populates='advertisments')
+    user = relationship('User', back_populates='advertisments', lazy='selectin')
 
     def to_dict(self):
         info = {'id': self.id,

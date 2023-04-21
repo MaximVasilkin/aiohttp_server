@@ -1,7 +1,7 @@
 from work_with_db import db
-from asyncio import run
+from asyncio import run, WindowsSelectorEventLoopPolicy, set_event_loop_policy
 from models import User, Advertisment
-
+set_event_loop_policy(WindowsSelectorEventLoopPolicy())
 
 
 user_json = {'name': 'Иван', 'email': 'мыло@bk.ru', 'password': 'пароль'}
@@ -9,8 +9,7 @@ user_json = {'name': 'Иван', 'email': 'мыло@bk.ru', 'password': 'пар�
 adv_json = {'owner_id': 2, 'title': 'куплю лук', 'description': 'хороший'}
 
 
-result = run(db.check_rights_on_adv(2, 4))
+result = run(db.get_object_by_attr(Advertisment, 'id', 3))
 
-print(result)
-
+print(result.user)
 

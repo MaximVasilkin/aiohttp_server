@@ -12,6 +12,12 @@ DB_PASSWORD = getenv('POSTGRES_PASSWORD')
 HOST = 'postgresql_db'
 PORT = '5432'
 
+# DB_NAME = 'aiohttp_db'
+# DB_USER = 'postgres'
+# DB_PASSWORD = 'pstpwd'
+# HOST = 'localhost'
+# PORT = '5432'
+
 
 DSN = f'postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{HOST}:{PORT}/{DB_NAME}'
 engine = create_async_engine(DSN)
@@ -31,39 +37,33 @@ class DataBase:
             session.add(new_object)
             await session.commit()
 
-    async def get_object(self, model, item_id, to_dict=False):
+    async def get_object_by_attr(self, model, attr: str, value, to_dict=False):
         async with self.Session() as session:
-            object_ = await session.get(model, item_id)
+            response = await session.execute(select(model).where(getattr(model, attr) == value))
+            object_ = response.scalar()
             if object_ and to_dict:
                 return object_.to_dict()
             return object_
 
     async def update_object(self, model, item_id, **kwargs):
         async with self.Session() as session:
-            object_ = await self.get_object(model, item_id)
+            object_ = await self.get_object_by_attr(model, 'id', item_id)
             for field, value in kwargs.items():
                 setattr(object_, field, value)
             session.add(object_)
             await session.commit()
 
     async def delete_object(self, model, item_id):
-        obj = await self.get_object(model, item_id)
+        object_ = await self.get_object_by_attr(model, 'id', item_id)
         async with self.Session() as session:
-            await session.delete(obj)
+            await session.delete(object_)
             await session.commit()
-
-    async def get_user_by_email(self, email):
-        async with self.Session() as session:
-            result = await session.execute(select(User).where(User.email == email))
-            return result.scalar()
-
 
     async def check_rights_on_adv(self, user_id, adv_id):
         async with self.Session() as session:
             result = await session.execute(select(User).join(Advertisment).where(User.id == user_id,
                                                                                  Advertisment.id == adv_id))
             return result.scalar()
-
 
 
 async def create_tables():

@@ -4,8 +4,10 @@ WORKDIR /app
 
 COPY ./app .
 
+COPY ./requirements.txt .
+
 EXPOSE 8080
 
-CMD pip install -r requirements.txt && \
-    python3 work_with_db.py && \
-    python3 main.py
+RUN pip install -r requirements.txt
+
+CMD gunicorn main:app --bind 0.0.0.0:8080 --worker-class aiohttp.GunicornWebWorker

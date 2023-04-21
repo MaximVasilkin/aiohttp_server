@@ -1,4 +1,6 @@
-from aiohttp import web
+import json
+
+from aiohttp import web, hdrs
 import asyncio
 from pydantic import ValidationError
 from app_errors import HttpError, IntegrityError
@@ -55,10 +57,10 @@ def __error_message(message, status_code):
     return response
 
 
-async def get_object_and_check(model, item_id, object_name, to_dict=True):
-    object = await db.get_object(model, item_id, to_dict=to_dict)
+async def get_object_and_check(model, attr, value, to_dict=True):
+    object = await db.get_object_by_attr(model, attr, value, to_dict=to_dict)
     if object is None:
-        raise HttpError(404, f'{object_name} not found')
+        raise HttpError(404, f'{model.__name__} not found')
     return object
 
 
@@ -67,7 +69,7 @@ async def authenticate(request: web.Request):
     password = request.headers.get('password')
     if not email or not password:
         raise HttpError(410, 'Empty email or password')
-    user = await db.get_user_by_email(email)
+    user = await db.get_object_by_attr(User, 'email', email)
     if not user or not check_password(password, user.password):
         raise HttpError(410, 'Invalid authenticate')
     return user
@@ -99,7 +101,7 @@ async def check_adv_owner(user_id, adv_id):
 class UserView(web.View):
     async def get(self):
         user_id = int(self.request.match_info['user_id'])
-        user = await get_object_and_check(User, user_id, 'user')
+        user = await get_object_and_check(User, 'id', user_id)
         return web.json_response(user | Status.ok)
 
     async def post(self):
@@ -109,9 +111,9 @@ class UserView(web.View):
         return web.json_response(validated_json | Status.ok)
 
     async def patch(self):
-        user_id = int(self.request.match_info['user_id'])
         validated_json = await get_user_checked_request(self.request, PatchUser)
-        user = await get_object_and_check(User, user_id, 'user')
+        user_id = int(self.request.match_info['user_id'])
+        user = await get_object_and_check(User, 'id', user_id)
         await db.update_object(User, user_id, **validated_json)
         if 'password' in validated_json:
             del validated_json['password']
@@ -119,7 +121,7 @@ class UserView(web.View):
 
     async def delete(self):
         user_id = int(self.request.match_info['user_id'])
-        user = await get_object_and_check(User, user_id, 'user')
+        user = await get_object_and_check(User, 'id', user_id)
         await db.delete_object(User, user_id)
         return web.json_response(user | Status.ok)
 
@@ -127,14 +129,14 @@ class UserView(web.View):
 class AdvView(web.View):
     async def get(self):
         adv_id = int(self.request.match_info['adv_id'])
-        adv = await get_object_and_check(Advertisment, adv_id, 'advertisment')
+        adv = await get_object_and_check(Advertisment, 'id', adv_id)
         return web.json_response(adv | Status.ok)
 
     async def post(self):
         user, validated_json = await get_adv_checked_request(self.request, PostAdv)
         validated_json['owner_id'] = user.id
         await db.create_object(Advertisment, **validated_json)
-        return web.json_response(validated_json | Status.ok)
+        return web.Response(text=json.dumps(validated_json, ensure_ascii=False), content_type='application/json')
 
     async def patch(self):
         adv_id = int(self.request.match_info['adv_id'])

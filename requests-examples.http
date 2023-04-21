@@ -34,7 +34,10 @@ Content-Type: application/json
 DELETE {{baseUrl}}/user/1
 Content-Type: application/json
 
+###
+
 # создание объявления
+
 POST {{baseUrl}}/advertisment
 Content-Type: application/json
 email: test@mail.ru
