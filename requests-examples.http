@@ -1,0 +1,75 @@
+# примеры API-запросов
+
+@baseUrl = http://localhost:8080
+
+# создание пользователя
+POST {{baseUrl}}/user
+Content-Type: application/json
+
+{
+  "name": "Test",
+  "email": "test@mail.ru",
+  "password": "12345abc"
+}
+
+###
+
+# получение пользователя
+GET {{baseUrl}}/user/1
+Content-Type: application/json
+
+###
+
+# обновление пользователя
+PATCH {{baseUrl}}/user/1
+Content-Type: application/json
+
+{
+  "password": "aWx764!0"
+}
+
+###
+
+# удаление пользователя
+DELETE {{baseUrl}}/user/1
+Content-Type: application/json
+
+# создание объявления
+POST {{baseUrl}}/advertisment
+Content-Type: application/json
+email: test@mail.ru
+password: 12345abc
+
+{
+  "title": "Продам рассаду",
+  "description": "Только свежие саженцы"
+}
+
+###
+
+# получение объявления
+GET {{baseUrl}}/advertisment/1
+Content-Type: application/json
+
+###
+
+# обновление объявления
+PATCH {{baseUrl}}/advertisment/1
+Content-Type: application/json
+email: test@mail.ru
+password: 12345abc
+
+{
+  "description": "Только свежие саженцы, крупные плоды",
+  "title": "Продам рассаду (яблоки)"
+}
+
+###
+
+# удаление объявления
+DELETE {{baseUrl}}/advertisment/1
+Content-Type: application/json
+email: test@mail.ru
+password: 12345abc
+
+###

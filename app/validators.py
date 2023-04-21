@@ -1,0 +1,65 @@
+from pydantic import BaseModel, validator, EmailStr
+from typing import Optional
+
+
+def _check_text_len(text, min_len, max_len, description):
+    len_text = len(text)
+    if len_text > max_len or len_text < min_len:
+        raise ValueError(f'Incorrect length of {description}')
+
+
+def is_acceptable_password(password, min_len, max_len):
+    return 'password' not in password.lower()\
+           and max_len >= len(password) >= min_len \
+           and any(map(lambda x: x.isdigit(), password)) \
+           and not password.isdigit()
+
+
+class AbcUser(BaseModel):
+    name: str
+    password: str
+
+    @validator('name')
+    def validate_name(cls, value):
+        if not value.isalpha():
+            raise ValueError('Name should contain only letters')
+        return value
+
+    @validator('password')
+    def validate_password(cls, value):
+        if not is_acceptable_password(value, 8, 99):
+            raise ValueError('Too easy password')
+        return value
+
+
+class PostUser(AbcUser, BaseModel):
+    email: EmailStr
+
+
+class PatchUser(AbcUser, BaseModel):
+    name: Optional[str]
+    password: Optional[str]
+
+
+class AbcAdv(BaseModel):
+    title: str
+    description: str
+
+    @validator('title')
+    def validate_title(cls, value):
+        _check_text_len(value, 5, 70, 'title')
+        return value
+
+    @validator('description')
+    def validate_description(cls, value):
+        _check_text_len(value, 10, 500, 'description')
+        return value
+
+
+class PostAdv(AbcAdv, BaseModel):
+    pass
+
+
+class PatchAdv(AbcAdv, BaseModel):
+    title: Optional[str]
+    description: Optional[str]

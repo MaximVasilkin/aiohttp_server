@@ -1,0 +1,28 @@
+version: '3.9'
+
+volumes:
+  pg_data:
+
+networks:
+  backend:
+
+services:
+  website:
+    build: .
+    ports:
+      - '8080:8080'
+    env_file:
+      - env
+    depends_on:
+      - postgresql_db
+    networks:
+      - backend
+
+  postgresql_db:
+    image: 'postgres:14.5-alpine'
+    env_file:
+      - env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - backend
