@@ -1,5 +1,18 @@
-from pydantic import BaseModel, validator, EmailStr
+from pydantic import BaseModel, validator, EmailStr, ValidationError
 from typing import Optional
+from aiohttp import web
+from app_errors import my_http_error
+
+
+def validate(json, validate_model_class):
+    try:
+        model = validate_model_class(**json)
+        validated_json = model.dict(exclude_none=True)
+        if not validated_json:
+            raise my_http_error(web.HTTPBadRequest, 'Validation error')
+        return validated_json
+    except ValidationError as error:
+        raise my_http_error(web.HTTPBadRequest, error.errors())
 
 
 def _check_text_len(text, min_len, max_len, description):

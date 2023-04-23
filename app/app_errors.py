@@ -1,7 +1,8 @@
-from sqlalchemy.exc import IntegrityError
+import json
 
 
-class HttpError(Exception):
-    def __init__(self, status_code, message):
-        self.status_code = status_code
-        self.message = message
+def my_http_error(http_error, message):
+    text = json.dumps({'error': message})
+    content_type = 'application/json'
+    error = http_error(text=text, content_type=content_type)
+    return error

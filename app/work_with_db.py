@@ -12,12 +12,6 @@ DB_PASSWORD = getenv('POSTGRES_PASSWORD')
 HOST = 'postgresql_db'
 PORT = '5432'
 
-# DB_NAME = 'aiohttp_db'
-# DB_USER = 'postgres'
-# DB_PASSWORD = 'pstpwd'
-# HOST = 'localhost'
-# PORT = '5432'
-
 
 DSN = f'postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{HOST}:{PORT}/{DB_NAME}'
 engine = create_async_engine(DSN)
